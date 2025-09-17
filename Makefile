@@ -15,10 +15,7 @@ LIB_SOURCES = $(filter-out $(SRCDIR)/main.cpp, $(SOURCES))
 TEST_OBJECTS = $(TEST_SOURCES:$(TESTDIR)/%.cpp=$(BUILDDIR)/test_%.o) $(LIB_SOURCES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
 TEST_TARGET = $(BUILDDIR)/test_runner
 
-# Validation tool
-VALIDATE_TARGET = $(BUILDDIR)/validate_shapes
-
-.PHONY: all clean test run-tests validate force-rebuild
+.PHONY: all clean test force-rebuild
 
 all: $(TARGET)
 
@@ -42,18 +39,9 @@ $(BUILDDIR):
 clean:
 	rm -rf $(BUILDDIR)
 
-test: $(TARGET)
-	./$(TARGET)
-
-run-tests: $(TEST_TARGET)
+test: clean $(TEST_TARGET)
 	./$(TEST_TARGET)
 
-run: $(TARGET)
+run: clean $(TARGET)
 	./$(TARGET)
 
-# Validation tool targets
-$(VALIDATE_TARGET): $(TESTDIR)/tetris/validate_shapes.cpp $(LIB_SOURCES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o) | $(BUILDDIR)
-	$(CXX) $(CXXFLAGS) -I$(INCDIR) $(TESTDIR)/tetris/validate_shapes.cpp $(LIB_SOURCES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o) -o $@
-
-validate: clean $(VALIDATE_TARGET)
-	./$(VALIDATE_TARGET)

@@ -3,9 +3,9 @@
 
 // Include test files
 #include "tetris/test_piece.cpp"
-#include "tetris/test_pieces.cpp"
 
-int main() {
+int main()
+{
     std::cout << "Running All TetrisPiece Tests\n";
     std::cout << "=============================\n\n";
 
@@ -15,7 +15,7 @@ int main() {
     std::cout << "\n";
 
     // Run comprehensive transformation tests
-    testAllTransformations();
+    runAdvancedTetrisPieceTests();
 
     std::cout << "\n🎉 All tests completed!\n";
     return 0;

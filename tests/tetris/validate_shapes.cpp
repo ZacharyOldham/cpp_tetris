@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <functional>
 #include "tetris/piece.h"
 
 // Include test files to get shape definitions and helper functions
@@ -8,152 +9,65 @@
 #include "test_piece.cpp"
 #include "test_pieces.cpp"
 
+void validateTransformation(
+    const Shape &base_shape,
+    const Shape &expected_shape,
+    std::function<void(TetrisPiece&)> transformation,
+    const std::string &test_name,
+    const std::string &shape_name)
+{
+    TetrisPiece computed{base_shape};
+    transformation(computed);
+    TetrisPiece hardcoded{expected_shape};
+
+    if (!piecesEqual(computed, hardcoded))
+    {
+        std::cout << "ERROR: " << test_name << " mismatch in " << shape_name << "\n";
+        std::cout << "Hardcoded:\n" << hardcoded << "\n";
+        std::cout << "Computed:\n" << computed << "\n";
+        throw std::runtime_error("Validation failed");
+    }
+    else
+    {
+        std::cout << "✓ " << test_name << " correct\n";
+    }
+}
 
 void validateShapeTransformations(const std::vector<Shape> &shapes, const std::string &shape_name)
 {
     std::cout << "Validating " << shape_name << " transformations:\n";
 
-    // Test each transformation from the base shape (index 0)
     const Shape &base_shape = shapes[0];
 
-    // Test 90° CW rotation (should match shapes[1])
-    {
-        TetrisPiece computed{base_shape};
-        computed.rotateClockwise();
-        TetrisPiece hardcoded{shapes[1]};
+    // Test single transformations
+    validateTransformation(base_shape, shapes[1],
+        [](TetrisPiece& p) { p.rotateClockwise(); },
+        "90° CW rotation", shape_name);
 
-        if (!piecesEqual(computed, hardcoded))
-        {
-            std::cout << "ERROR: 90° CW rotation mismatch in " << shape_name << "\n";
-            std::cout << "Hardcoded (shapes[1]):\n" << hardcoded << "\n";
-            std::cout << "Computed (base + rotateClockwise()):\n" << computed << "\n";
+    validateTransformation(base_shape, shapes[2],
+        [](TetrisPiece& p) { p.rotate180(); },
+        "180° rotation", shape_name);
 
-            throw std::runtime_error("Validation failed");
-        }
-        else
-        {
-            std::cout << "✓ 90° CW rotation correct\n";
-        }
-    }
+    validateTransformation(base_shape, shapes[3],
+        [](TetrisPiece& p) { p.rotateCounterClockwise(); },
+        "270° CW rotation", shape_name);
 
-    // Test 180° rotation (should match shapes[2])
-    {
-        TetrisPiece computed{base_shape};
-        computed.rotate180();
-        TetrisPiece hardcoded{shapes[2]};
+    validateTransformation(base_shape, shapes[4],
+        [](TetrisPiece& p) { p.flipHorizontal(); },
+        "Horizontal flip", shape_name);
 
-        if (!piecesEqual(computed, hardcoded))
-        {
-            std::cout << "ERROR: 180° rotation mismatch in " << shape_name << "\n";
-
-            // Show internal grid representation
-            std::cout << "Hardcoded (shapes[2]):\n" << hardcoded << "\n";
-            std::cout << "Computed (base + rotate180()):\n" << computed << "\n";
-            throw std::runtime_error("Validation failed");
-        }
-        else
-        {
-            std::cout << "✓ 180° rotation correct\n";
-        }
-    }
-
-    // Test 270° CW rotation (should match shapes[3])
-    {
-        TetrisPiece computed{base_shape};
-        computed.rotateCounterClockwise();
-        TetrisPiece hardcoded{shapes[3]};
-
-        if (!piecesEqual(computed, hardcoded))
-        {
-            std::cout << "ERROR: 270° CW (CCW) rotation mismatch in " << shape_name << "\n";
-            std::cout << "Hardcoded (shapes[3]):\n" << hardcoded << "\n";
-            std::cout << "Computed (base + rotateCounterClockwise()):\n" << computed << "\n";
-            throw std::runtime_error("Validation failed");
-        }
-        else
-        {
-            std::cout << "✓ 270° CW rotation correct\n";
-        }
-    }
-
-    // Test horizontal flip (should match shapes[4])
-    {
-        TetrisPiece computed{base_shape};
-        computed.flipHorizontal();
-        TetrisPiece hardcoded{shapes[4]};
-
-        if (!piecesEqual(computed, hardcoded))
-        {
-            std::cout << "ERROR: Horizontal flip mismatch in " << shape_name << "\n";
-            std::cout << "Hardcoded (shapes[4]):\n" << hardcoded << "\n";
-            std::cout << "Computed (base + flipHorizontal()):\n" << computed << "\n";
-            throw std::runtime_error("Validation failed");
-        }
-        else
-        {
-            std::cout << "✓ Horizontal flip correct\n";
-        }
-    }
-
-    // Test vertical flip (should match flip + 180 = shapes[6])
-    {
-        TetrisPiece computed{base_shape};
-        computed.flipVertical();
-        TetrisPiece hardcoded{shapes[6]};
-
-        if (!piecesEqual(computed, hardcoded))
-        {
-            std::cout << "ERROR: Vertical flip mismatch in " << shape_name << "\n";
-            std::cout << "Hardcoded (shapes[6]):\n" << hardcoded << "\n";
-            std::cout << "Computed (base + flipVertical()):\n" << computed << "\n";
-            throw std::runtime_error("Validation failed");
-        }
-        else
-        {
-            std::cout << "✓ Vertical flip correct\n";
-        }
-    }
+    validateTransformation(base_shape, shapes[6],
+        [](TetrisPiece& p) { p.flipVertical(); },
+        "Vertical flip", shape_name);
 
     // Test compound transformations
-    // Flipped + 90° CW (should match shapes[5])
-    {
-        TetrisPiece computed{base_shape};
-        computed.flipHorizontal();
-        computed.rotateClockwise();
-        TetrisPiece hardcoded{shapes[5]};
+    validateTransformation(base_shape, shapes[5],
+        [](TetrisPiece& p) { p.flipHorizontal(); p.rotateClockwise(); },
+        "Flipped + 90° CW", shape_name);
 
-        if (!piecesEqual(computed, hardcoded))
-        {
-            std::cout << "ERROR: Flipped + 90° CW mismatch in " << shape_name << "\n";
-            std::cout << "Hardcoded (shapes[5]):\n" << hardcoded << "\n";
-            std::cout << "Computed (base + flipHorizontal() + rotateClockwise()):\n" << computed << "\n";
-            throw std::runtime_error("Validation failed");
-        }
-        else
-        {
-            std::cout << "✓ Flipped + 90° CW correct\n";
-        }
-    }
-
-    // Flipped + 270° CW (should match shapes[7])
-    {
-        TetrisPiece computed{base_shape};
-        computed.flipHorizontal();
-        computed.rotateCounterClockwise();
-        TetrisPiece hardcoded{shapes[7]};
-
-        if (!piecesEqual(computed, hardcoded))
-        {
-            std::cout << "ERROR: Flipped + 270° CW mismatch in " << shape_name << "\n";
-            std::cout << "Hardcoded (shapes[7]):\n" << hardcoded << "\n";
-            std::cout << "Computed (base + flipHorizontal() + rotateCounterClockwise()):\n" << computed << "\n";
-            throw std::runtime_error("Validation failed");
-        }
-        else
-        {
-            std::cout << "✓ Flipped + 270° CW correct\n";
-        }
-    }
+    validateTransformation(base_shape, shapes[7],
+        [](TetrisPiece& p) { p.flipHorizontal(); p.rotateCounterClockwise(); },
+        "Flipped + 270° CW", shape_name);
 
     std::cout << "\n";
 }
