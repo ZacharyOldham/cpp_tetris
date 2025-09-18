@@ -8,11 +8,10 @@
 
 class TetrisPiece
 {
-private:
-    size_t width;
-    size_t height;
 
 public:
+    size_t width;
+    size_t height;
     std::vector<std::vector<bool> *> *grid;
     /**
      * @brief Construct a new Tetris Piece from a 2D shape vector
@@ -23,6 +22,15 @@ public:
      */
     TetrisPiece(std::vector<std::vector<bool>> shape);
     ~TetrisPiece();
+
+    /**
+     * @brief Compare two pieces
+     *
+     * @param p The piece to compare against
+     * @return true If the two pieces represent identical pieces
+     * @return false If the two pieces do not represent identical pieces
+     */
+    bool operator==(const TetrisPiece &p) const;
 
     /**
      * @brief Flip the piece horizontally (reorder columns)
@@ -60,7 +68,7 @@ public:
      * @param col_idx The index of the column to find the lowest block in
      * @return The height of the lowest block in the given column (zero indexed). If no blocks are present in the given column the max size_t is returned.
      */
-    size_t lowestBlockInColumn(size_t col_idx);
+    size_t lowestBlockInColumn(size_t col_idx) const;
 
     /**
      * @brief Output a string representation of a tetris piece to the given output stream

@@ -38,11 +38,34 @@ TetrisPiece::TetrisPiece(std::vector<std::vector<bool>> shape)
     }
 }
 
-TetrisPiece::~TetrisPiece() {
-    for (size_t i = 0; i < width; i++) {
+TetrisPiece::~TetrisPiece()
+{
+    for (size_t i = 0; i < width; i++)
+    {
         delete grid->at(i);
     }
     delete grid;
+}
+
+bool TetrisPiece::operator==(const TetrisPiece &p) const
+{
+    if (width != p.width || height != p.height)
+    {
+        return false;
+    }
+
+    for (size_t col_idx = 0; col_idx < width; ++col_idx)
+    {
+        for (size_t row_idx = 0; row_idx < height; ++row_idx)
+        {
+            if (grid->at(col_idx)->at(row_idx) != p.grid->at(col_idx)->at(row_idx))
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 void TetrisPiece::flipHorizontal()
@@ -59,7 +82,7 @@ void TetrisPiece::flipVertical()
 {
     for (size_t col_idx = 0; col_idx < width; col_idx++)
     {
-        std::vector<bool>& col = *(grid->at(col_idx));
+        std::vector<bool> &col = *(grid->at(col_idx));
         for (size_t row_idx = 0; row_idx < height / 2; row_idx++)
         {
             bool temp_val = col.at(row_idx);
@@ -156,9 +179,9 @@ void TetrisPiece::rotate180()
     }
 }
 
-size_t TetrisPiece::lowestBlockInColumn(size_t col_idx)
+size_t TetrisPiece::lowestBlockInColumn(size_t col_idx) const
 {
-    const std::vector<bool>& column = *(grid->at(col_idx));
+    const std::vector<bool> &column = *(grid->at(col_idx));
     for (size_t row_idx = 0; row_idx < height; row_idx++)
     {
         if (column.at(row_idx))
